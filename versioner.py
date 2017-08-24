@@ -50,7 +50,7 @@ def git_version(previous_commit=None):
 def write_version_py(package_name, version, previous_commit=None,
                      is_released=False, filename=None):
     if filename is None:
-        filename = os.path.abspath(package_name, "_version.py")
+        filename = os.path.abspath(os.path.join(package_name, "_version.py"))
 
     m = _DOT_NUMBERS_RE.search(version)
     if m is None:
