@@ -1,3 +1,6 @@
+# Copyright (c) 2017 by David Cournapeau
+# This software is released under the MIT license. See LICENSE file for the
+# actual license.
 import os.path
 import re
 import subprocess
