@@ -15,8 +15,10 @@ prefer doing things completely automatically from git tags, look at the
 Usage
 =====
 
-You can decide to either install simple_versioning package, or simply copy the
-file versioner.py in the directory containing your setup.py.
+You can decide to either install simple_versioner package, or simply copy the
+file simple_versioner.py in the directory containing your setup.py. The module
+is designed such as copying the file directly is always possible, as
+setup-dependencies are not handled very well in python at this time.
 
 Initial setup
 -------------
