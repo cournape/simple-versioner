@@ -10,46 +10,44 @@ This package allows you to achieve the following:
 It tries to assume as little as possible about your package structure and
 versioning scheme. You are expected to manually set release versions. If you
 prefer doing things completely automatically from git tags, look at the
-[versioneer package](https://github.com/warner/python-versioneer).
+`versioneer package <https://github.com/warner/python-versioneer>`.
 
-# Usage
+Usage
+=====
 
 You can decide to either install simple_versioning package, or simply copy the
 file versioner.py in the directory containing your setup.py.
 
-## Initial setup
+Initial setup
+-------------
 
-Then, you need to do the following:
+Then, you need to do the following::
 
-```
-# setup.py
-...
+  # setup.py
+  ...
+  
+  from simple_versioner import write_version_py
+  
+  VERSION = "1.0.0"
+  IS_RELEASED = False
+  
+  full_version = write_version_py("my_package", VERSION, is_released=IS_RELEASED1)
+  
+  ...
+  
+  setup(version=full_version)
 
-from versioner import write_version_py
+And::
 
-VERSION = "1.0.0"
-IS_RELEASED = False
-
-full_version = write_version_py("my_package", VERSION, is_released=IS_RELEASED1)
-
-...
-
-setup(version=full_version)
-```
-
-And
-
-```
-# my_package/__init__.py
-
-try:
-    from ._version import (
-        version as __version__, version_info as __version_info__
-    )
-except ImportError:
-    __version__ = "unknown"
-    __version_info__ = (0, 0, 0, "unknown", 0)
-```
+   # my_package/__init__.py
+   
+   try:
+       from ._version import (
+           version as __version__, version_info as __version_info__
+       )
+   except ImportError:
+       __version__ = "unknown"
+       __version_info__ = (0, 0, 0, "unknown", 0)
 
 Once this is done, full_version will automatically contain a ".devN" suffix for
 non released version, where N is the build number.
@@ -58,7 +56,8 @@ If a "last_commit" argument is given to write_version_py, the build number will
 be computed from there, otherwise it will calculated from the first commit,
 defined as the oldest tail of the git graph.
 
-## Making a release
+Making a release
+----------------
 
 When doing a release, you need to change IS_RELEASED to True, in the same
 commit as the one referred to by the corresponding git tag. Again, if you
