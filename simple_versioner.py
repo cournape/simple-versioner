@@ -83,8 +83,8 @@ else:
         # must be a source distribution, use existing version file
         try:
             m = __import__(package_name + "._version")
-            git_rev = m.git_revision
-            full_v = m.full_version
+            git_rev = m._version.git_revision
+            full_v = m._version.full_version
         except ImportError:
             raise ImportError("Unable to import git_revision. Try removing "
                               "{0} and the build directory "
