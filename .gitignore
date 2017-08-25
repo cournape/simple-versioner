@@ -1,0 +1,4 @@
+.coverage
+build
+dist
+simple_versioner.egg-info
