@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import unittest
 
-from versioner import write_version_py
+from simple_versioner import write_version_py
 
 
 def import_from_path(path, module_name="<dummy>"):
@@ -47,7 +47,7 @@ class TestVersioner(unittest.TestCase):
 
         # When
         with cd(self.prefix):
-            with mock.patch("versioner.git_version", return_value=("abcd", 0)):
+            with mock.patch("simple_versioner.git_version", return_value=("abcd", 0)):
                 write_version_py(package_name, version, filename=filename)
 
         # Then
