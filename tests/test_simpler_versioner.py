@@ -8,6 +8,7 @@ import os
 import os.path
 import shutil
 import tempfile
+import textwrap
 import unittest
 
 from simple_versioner import write_version_py
@@ -40,7 +41,7 @@ class TestVersioner(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.prefix)
 
-    def test_simple(self):
+    def test_git_mode_simple(self):
         # Given
         package_name = "yolo"
         version = "1.0.0"
@@ -59,3 +60,34 @@ class TestVersioner(unittest.TestCase):
         self.assertIs(m.is_released, False)
         self.assertEqual(m.version_info, (1, 0, 0, "dev", 0))
         self.assertEqual(m.git_revision, "abcd")
+
+    def test_sdist_mode_simple(self):
+        # Given
+        package_name = "yolo"
+        version = "1.0"
+
+        os.makedirs(os.path.join(self.prefix, package_name))
+
+        _version_path = os.path.join(self.prefix, package_name, "_version.py")
+        with open(_version_path, "wt") as fp:
+            fp.write(textwrap.dedent("""\
+            # THIS FILE IS GENERATED FROM TFBOOST SETUP.PY
+            version = '1.0'
+            full_version = '1.0.dev1'
+            git_revision = 'fbd0fc1adb572405db7ce0da4fe56f8d7de5ed4d'
+            is_released = False
+
+            if is_released:
+                version_info = (1, 0, 'final', 0)
+            else:
+                version = full_version
+                version_info = (1, 0, 'dev', 1)
+            """))
+
+
+        # When
+        with cd(self.prefix):
+            full_version = write_version_py(package_name, version)
+
+        # Then
+        self.assertEqual(full_version, "1.0.dev1")
