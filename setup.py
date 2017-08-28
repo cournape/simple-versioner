@@ -11,4 +11,5 @@ setup(
     description="Simple versioning module for python packages.",
     license="MIT",
     url="https://github.com/cournape/simple-versioner",
+    py_modules=["simple_versioner"],
 )
