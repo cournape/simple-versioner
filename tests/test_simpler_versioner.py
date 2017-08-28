@@ -56,7 +56,9 @@ class TestVersioner(unittest.TestCase):
 
         # When
         with cd(self.prefix):
-            with mock.patch("simple_versioner.git_version", return_value=("abcd", 0)):
+            with mock.patch(
+                "simple_versioner.git_version", return_value=("abcd", 0)
+            ):
                 write_version_py(package_name, version, filename=filename)
 
         # Then
@@ -92,7 +94,6 @@ class TestVersioner(unittest.TestCase):
                 version = full_version
                 version_info = (1, 0, 'dev', 1)
             """))
-
 
         # When
         with cd(self.prefix):
