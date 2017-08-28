@@ -2,11 +2,11 @@
 # This software is released under the MIT license. See LICENSE file for the
 # actual license.
 import contextlib
-import importlib.util
 import mock
 import os
 import os.path
 import shutil
+import sys
 import tempfile
 import textwrap
 import unittest
@@ -15,11 +15,16 @@ from simple_versioner import write_version_py
 
 
 def import_from_path(path, module_name="<dummy>"):
-    # Works on 3.5 and above only
-    spec = importlib.util.spec_from_file_location(module_name, path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    if sys.version_info[0] < 3:
+        import imp
+        return imp.load_source(module_name, path)
+    else:
+        # Works on 3.5 and above only
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(module_name, path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
 
 
 @contextlib.contextmanager
@@ -67,6 +72,10 @@ class TestVersioner(unittest.TestCase):
         version = "1.0"
 
         os.makedirs(os.path.join(self.prefix, package_name))
+
+        init_path = os.path.join(self.prefix, package_name, "__init__.py")
+        with open(init_path, "wt") as fp:
+            fp.write("")
 
         _version_path = os.path.join(self.prefix, package_name, "_version.py")
         with open(_version_path, "wt") as fp:
