@@ -1,0 +1,8 @@
+2017-08-28    0.1.9
+-------------------
+
+First release of simple-versioner. Main features are there:
+
+* support for git clones and sdist
+* support for python 2.7 and 3.5 upward
+* basic testing + travis-ci setup
