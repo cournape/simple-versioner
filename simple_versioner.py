@@ -10,14 +10,14 @@ _DOT_NUMBERS_RE = re.compile("v?(\d+!)?(\d+(\.\d+)*)")
 
 
 # Return the git revision as a string
-def git_version(previous_commit=None):
+def git_version(since_commit=None):
     """
     Compute the current git revision, and the number of commits since
-    <previous_commit>.
+    <since_commit>.
 
     Parameters
     ----------
-    previous_commit : string or None
+    since_commit : string or None
         If specified and not None, git_count will be the number of commits
         between this value and HEAD. Useful to e.g. compute a build number.
     """
@@ -27,14 +27,14 @@ def git_version(previous_commit=None):
     except OSError:
         git_revision = "Unknown"
 
-    if previous_commit is None:
-        previous_commit = "HEAD"
+    if since_commit is None:
+        since_commit = "HEAD"
     else:
-        previous_commit += ".."
+        since_commit += ".."
 
     try:
         out = subprocess.check_output(
-            ['git', 'rev-list', '--count', previous_commit]
+            ['git', 'rev-list', '--count', since_commit]
         )
         git_count = int(out.strip().decode('ascii'))
     except OSError:
@@ -43,7 +43,7 @@ def git_version(previous_commit=None):
     return git_revision, git_count
 
 
-def write_version_py(package_name, version, previous_commit=None,
+def write_version_py(package_name, version, since_commit=None,
                      is_released=False, filename=None):
     if filename is None:
         filename = os.path.abspath(os.path.join(package_name, "_version.py"))
@@ -71,7 +71,7 @@ else:
 
     fullversion = version
     if os.path.exists('.git'):
-        git_rev, dev_num = git_version(previous_commit)
+        git_rev, dev_num = git_version(since_commit)
     elif os.path.exists(filename):
         # must be a source distribution, use existing version file
         try:

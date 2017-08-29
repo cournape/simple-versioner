@@ -60,9 +60,9 @@ And::
 Once this is done, full_version will automatically contain a ".devN" suffix for
 non released version, where N is the build number.
 
-If a "last_commit" argument is given to write_version_py, the build number will
-be computed from there, otherwise it will calculated from the first commit,
-defined as the oldest tail of the git graph.
+If a "since_commit" argument is given to write_version_py, the build number
+will be computed from the commit specified by "since_commit", otherwise it will
+calculated from the first commit, defined as the oldest tail of the git graph.
 
 Making a release
 ----------------

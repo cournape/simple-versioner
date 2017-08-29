@@ -58,7 +58,7 @@ class TestGitVersion(TempdirMixin, unittest.TestCase):
         git_root = os.path.join(self.prefix, ".git")
         shutil.copytree(DUMMY_GIT_REPO, git_root)
 
-    def test_no_previous_commit(self):
+    def test_no_since_commit(self):
         # When
         with cd(self.prefix):
             _, build_number = git_version()
@@ -69,7 +69,7 @@ class TestGitVersion(TempdirMixin, unittest.TestCase):
     def test_since_a_tag(self):
         # When
         with cd(self.prefix):
-            _, build_number = git_version(previous_commit="v0.0.1")
+            _, build_number = git_version(since_commit="v0.0.1")
 
         # Then
         self.assertEqual(build_number, 1)
