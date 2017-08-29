@@ -1,4 +1,12 @@
-2017-08-28    0.1.9
+2017-08-29 0.2.0
+----------------
+
+Bug fix release of simple-versioner:
+
+* fix handling of no previous_commit argument for write_version_py.
+* rename previous_commit to the clearer since_commit.
+
+2017-08-28    0.1.0
 -------------------
 
 First release of simple-versioner. Main features are there:
