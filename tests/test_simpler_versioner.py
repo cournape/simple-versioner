@@ -61,6 +61,9 @@ class TestGitVersion(TempdirMixin, unittest.TestCase):
     def test_no_previous_commit(self):
         # When
         with cd(self.prefix):
+            import subprocess
+            print(subprocess.check_output(["git", "--version"]))
+            print(os.listdir(os.getcwd() + "/.git"))
             _, build_number = git_version()
 
         # Then
