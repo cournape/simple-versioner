@@ -1,3 +1,9 @@
+Simple-versioner: simple python versioning without too much magic
+=================================================================
+
+.. image:: https://travis-ci.org/cournape/simple-versioner.svg?branch=master
+    :target: https://travis-ci.org/cournape/simple-versioner
+
 Single-file module for simple python packages' versioning.
 
 This package allows you to achieve the following:
