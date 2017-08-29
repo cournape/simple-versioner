@@ -6,7 +6,6 @@ import mock
 import os
 import os.path
 import shutil
-import subprocess
 import sys
 import tempfile
 import textwrap
@@ -75,7 +74,7 @@ class TestGitVersion(TempdirMixin, unittest.TestCase):
         # Then
         self.assertEqual(build_number, 1)
 
-    
+
 class TestVersioner(TempdirMixin, unittest.TestCase):
     def test_git_mode_simple(self):
         # Given
