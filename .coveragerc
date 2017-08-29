@@ -1,5 +1,3 @@
-[report]
-
 [run]
 branch = True
 source = simple_versioner
