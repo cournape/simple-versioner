@@ -6,12 +6,17 @@ import mock
 import os
 import os.path
 import shutil
+import subprocess
 import sys
 import tempfile
 import textwrap
 import unittest
 
-from simple_versioner import write_version_py
+from simple_versioner import git_version, write_version_py
+
+
+HERE = os.path.dirname(__file__)
+DUMMY_GIT_REPO = os.path.join(HERE, "git-repo")
 
 
 def import_from_path(path, module_name="<dummy>"):
@@ -39,13 +44,39 @@ def cd(d):
         os.chdir(old_cwd)
 
 
-class TestVersioner(unittest.TestCase):
+class TempdirMixin(object):
     def setUp(self):
         self.prefix = tempfile.mkdtemp()
 
     def tearDown(self):
         shutil.rmtree(self.prefix)
 
+
+class TestGitVersion(TempdirMixin, unittest.TestCase):
+    def setUp(self):
+        super(TestGitVersion, self).setUp()
+
+        git_root = os.path.join(self.prefix, ".git")
+        shutil.copytree(DUMMY_GIT_REPO, git_root)
+
+    def test_no_previous_commit(self):
+        # When
+        with cd(self.prefix):
+            _, build_number = git_version()
+
+        # Then
+        self.assertEqual(build_number, 3)
+
+    def test_since_a_tag(self):
+        # When
+        with cd(self.prefix):
+            _, build_number = git_version(previous_commit="v0.0.1")
+
+        # Then
+        self.assertEqual(build_number, 1)
+
+    
+class TestVersioner(TempdirMixin, unittest.TestCase):
     def test_git_mode_simple(self):
         # Given
         package_name = "yolo"

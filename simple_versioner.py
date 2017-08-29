@@ -28,16 +28,9 @@ def git_version(previous_commit=None):
         git_revision = "Unknown"
 
     if previous_commit is None:
-        previous_commit += ".."
+        previous_commit = "HEAD"
     else:
-        cmd = ["git", "rev-list", "--max-parents=0", "HEAD"]
-        try:
-            out = subprocess.check_output(cmd)
-            first_commit = out.splitlines()[-1]
-        except OSError:
-            return git_version, 0
-
-        previous_commit = first_commit
+        previous_commit += ".."
 
     try:
         out = subprocess.check_output(
