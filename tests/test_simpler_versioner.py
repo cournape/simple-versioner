@@ -98,6 +98,41 @@ class TestVersioner(TempdirMixin, unittest.TestCase):
         self.assertEqual(m.version_info, (1, 0, 0, "dev", 0))
         self.assertEqual(m.git_revision, "abcd")
 
+    def test_sdist_mode_bootstrap_init(self):
+        # Sometimes, package.__init__ implies imports of 3rd packages that are
+        # not available when running setup.py, so it is important to make sure
+        # we can import package._version without trouble.
+
+        # Given
+        package_name = "yolo"
+        version = "1.0"
+
+        os.makedirs(os.path.join(self.prefix, package_name))
+
+        init_path = os.path.join(self.prefix, package_name, "__init__.py")
+        with open(init_path, "wt") as fp:
+            fp.write(
+                "# 3rd party library that will fail to import\nimport foo")
+
+        _version_path = os.path.join(self.prefix, package_name, "_version.py")
+        with open(_version_path, "wt") as fp:
+            fp.write(textwrap.dedent("""\
+            # THIS FILE IS GENERATED FROM TFBOOST SETUP.PY
+            version = '1.0.dev1'
+            full_version = '1.0.dev1'
+            git_revision = 'fbd0fc1adb572405db7ce0da4fe56f8d7de5ed4d'
+            is_released = False
+
+            version_info = (1, 0, 'dev', 1)
+            """))
+
+        # When
+        with cd(self.prefix):
+            full_version = write_version_py(package_name, version)
+
+        # Then
+        self.assertEqual(full_version, "1.0.dev1")
+
     def test_sdist_mode_simple(self):
         # Given
         package_name = "yolo"
@@ -113,16 +148,12 @@ class TestVersioner(TempdirMixin, unittest.TestCase):
         with open(_version_path, "wt") as fp:
             fp.write(textwrap.dedent("""\
             # THIS FILE IS GENERATED FROM TFBOOST SETUP.PY
-            version = '1.0'
+            version = '1.0.dev1'
             full_version = '1.0.dev1'
             git_revision = 'fbd0fc1adb572405db7ce0da4fe56f8d7de5ed4d'
             is_released = False
 
-            if is_released:
-                version_info = (1, 0, 'final', 0)
-            else:
-                version = full_version
-                version_info = (1, 0, 'dev', 1)
+            version_info = (1, 0, 'dev', 1)
             """))
 
         # When

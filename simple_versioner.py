@@ -1,12 +1,44 @@
 # Copyright (c) 2017 by David Cournapeau
 # This software is released under the MIT license. See LICENSE file for the
 # actual license.
+import ast
 import os.path
 import re
 import subprocess
 
 
 _DOT_NUMBERS_RE = re.compile("v?(\d+!)?(\d+(\.\d+)*)")
+
+
+class _AssignmentParser(ast.NodeVisitor):
+    """ Simple parser for python assignments."""
+    def __init__(self):
+        self._data = {}
+
+    def parse(self, s):
+        self._data.clear()
+
+        root = ast.parse(s)
+        self.visit(root)
+        return self._data
+
+    def generic_visit(self, node):
+        if type(node) != ast.Module:
+            raise ValueError(
+                "Unexpected expression @ line {0}".format(node.lineno),
+                node.lineno
+            )
+        super(_AssignmentParser, self).generic_visit(node)
+
+    def visit_Assign(self, node):
+        value = ast.literal_eval(node.value)
+        for target in node.targets:
+            self._data[target.id] = value
+
+
+def parse_version(path):
+    with open(path, "rt") as fp:
+        return _AssignmentParser().parse(fp.read())["version"]
 
 
 # Return the git revision as a string
@@ -62,11 +94,7 @@ full_version = '{full_version}'
 git_revision = '{git_revision}'
 is_released = {is_released}
 
-if is_released:
-    version_info = ({dot_numbers}, 'final', 0)
-else:
-    version = full_version
-    version_info = ({dot_numbers}, 'dev', {dev_num})
+version_info = {version_info}
 """
 
     fullversion = version
@@ -74,34 +102,25 @@ else:
         git_rev, dev_num = git_version(since_commit)
     elif os.path.exists(filename):
         # must be a source distribution, use existing version file
-        try:
-            m = __import__(package_name + "._version")
-            git_rev = m._version.git_revision
-            full_v = m._version.full_version
-        except ImportError:
-            raise ImportError("Unable to import git_revision. Try removing "
-                              "{0} and the build directory "
-                              "before building.".format(filename))
-
-        match = re.match(r'.*?\.dev(?P<dev_num>\d+)', full_v)
-        if match is None:
-            dev_num = 0
-        else:
-            dev_num = int(match.group('dev_num'))
+        return parse_version(filename)
     else:
         git_rev = "Unknown"
         dev_num = 0
 
+    if is_released:
+        release_level = "final"
+    else:
+        release_level = "dev"
+
     if not is_released:
         fullversion += '.dev' + str(dev_num)
 
-    dot_numbers_string = ", ".join(str(item) for item in dot_numbers)
+    version_info = dot_numbers + (release_level, dev_num)
 
     with open(filename, "wt") as fp:
         data = template.format(
-            version=version, full_version=fullversion,
-            git_revision=git_rev, is_released=is_released,
-            dot_numbers=dot_numbers_string, dev_num=dev_num,
+            version=version, full_version=fullversion, git_revision=git_rev,
+            is_released=is_released, version_info=version_info,
             package_name=package_name.upper(),
         )
         fp.write(data)
