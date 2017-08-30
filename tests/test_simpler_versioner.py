@@ -98,6 +98,28 @@ class TestVersioner(TempdirMixin, unittest.TestCase):
         self.assertEqual(m.version_info, (1, 0, 0, "dev", 0))
         self.assertEqual(m.git_revision, "abcd")
 
+    def test_git_mode_rc(self):
+        # Given
+        package_name = "yolo"
+        version = "1.0.0rc2"
+
+        filename = os.path.join(self.prefix, "_version.py")
+        os.makedirs(os.path.join(self.prefix, ".git"))
+
+        # When
+        with cd(self.prefix):
+            with mock.patch(
+                "simple_versioner.git_version", return_value=("abcd", 0)
+            ):
+                write_version_py(package_name, version, filename=filename)
+
+        # Then
+        m = import_from_path(filename)
+
+        self.assertIs(m.is_released, False)
+        self.assertEqual(m.version_info, (1, 0, 0, "rc", 2))
+        self.assertEqual(m.git_revision, "abcd")
+
     def test_sdist_mode_bootstrap_init(self):
         # Sometimes, package.__init__ implies imports of 3rd packages that are
         # not available when running setup.py, so it is important to make sure
@@ -183,7 +205,7 @@ class TestVersioner(TempdirMixin, unittest.TestCase):
             git_revision = 'fbd0fc1adb572405db7ce0da4fe56f8d7de5ed4d'
             is_released = True
 
-            version_info = (1, 0, 'final', 2)
+            version_info = (1, 0, 'rc', 2)
             """))
 
         # When

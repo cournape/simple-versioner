@@ -29,7 +29,7 @@ def _is_rc(version):
 def _rc_number(version):
     m = _R_RC.search(version)
     assert m is not None, version
-    return m.groups()[0]
+    return int(m.groups()[0])
 
 
 class _AssignmentParser(ast.NodeVisitor):
@@ -106,10 +106,6 @@ def write_version_py(package_name, version, since_commit=None,
     if m is None:
         raise ValueError("Format not supported: {!r}".format(version))
 
-    dot_numbers_string = m.groups()[1]
-
-    version = full_version = dot_numbers_string
-
     if not os.path.exists(".git") and os.path.exists(filename):
         # must be a source distribution, use existing version file
         return parse_version(filename)
@@ -119,15 +115,23 @@ def write_version_py(package_name, version, since_commit=None,
     else:
         git_rev, build_number = "Unknown", 0
 
-    if is_released:
+    if _is_rc(version):
+        release_level = "rc"
+    elif not is_released:
+        release_level = "dev"
+    else:
         release_level = "final"
-        final_version = version
+
+    dot_numbers_string = m.groups()[1]
+    full_version = dot_numbers_string
+
+    if is_released:
+        final_version = full_version
         if _is_rc(version):
             serial = _rc_number(version)
         else:
             serial = 0
     else:
-        release_level = "dev"
         full_version += '.dev' + str(build_number)
         final_version = full_version
         if _is_rc(version):
