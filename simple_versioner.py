@@ -9,6 +9,28 @@ import subprocess
 
 _DOT_NUMBERS_RE = re.compile("v?(\d+!)?(\d+(\.\d+)*)")
 
+_R_RC = re.compile("rc(\d+)$")
+
+_TEMPLATE = """\
+# THIS FILE IS GENERATED FROM {package_name} SETUP.PY
+version = '{final_version}'
+full_version = '{full_version}'
+git_revision = '{git_revision}'
+is_released = {is_released}
+
+version_info = {version_info}
+"""
+
+
+def _is_rc(version):
+    return _R_RC.search(version) is not None
+
+
+def _rc_number(version):
+    m = _R_RC.search(version)
+    assert m is not None, version
+    return int(m.groups()[0])
+
 
 class _AssignmentParser(ast.NodeVisitor):
     """ Simple parser for python assignments."""
@@ -84,45 +106,48 @@ def write_version_py(package_name, version, since_commit=None,
     if m is None:
         raise ValueError("Format not supported: {!r}".format(version))
 
-    main_group = m.groups()[1]
-    dot_numbers = tuple(int(item) for item in main_group.split("."))
-
-    template = """\
-# THIS FILE IS GENERATED FROM {package_name} SETUP.PY
-version = '{version}'
-full_version = '{full_version}'
-git_revision = '{git_revision}'
-is_released = {is_released}
-
-version_info = {version_info}
-"""
-
-    fullversion = version
-    if os.path.exists('.git'):
-        git_rev, dev_num = git_version(since_commit)
-    elif os.path.exists(filename):
+    if not os.path.exists(".git") and os.path.exists(filename):
         # must be a source distribution, use existing version file
         return parse_version(filename)
+
+    if os.path.exists('.git'):
+        git_rev, build_number = git_version(since_commit)
     else:
-        git_rev = "Unknown"
-        dev_num = 0
+        git_rev, build_number = "Unknown", 0
+
+    if _is_rc(version):
+        release_level = "rc"
+    elif not is_released:
+        release_level = "dev"
+    else:
+        release_level = "final"
+
+    dot_numbers_string = m.groups()[1]
+    full_version = dot_numbers_string
 
     if is_released:
-        release_level = "final"
+        final_version = full_version
+        if _is_rc(version):
+            serial = _rc_number(version)
+        else:
+            serial = 0
     else:
-        release_level = "dev"
+        full_version += '.dev' + str(build_number)
+        final_version = full_version
+        if _is_rc(version):
+            serial = _rc_number(version)
+        else:
+            serial = build_number
 
-    if not is_released:
-        fullversion += '.dev' + str(dev_num)
-
-    version_info = dot_numbers + (release_level, dev_num)
+    dot_numbers = tuple(int(item) for item in dot_numbers_string.split("."))
+    version_info = dot_numbers + (release_level, serial)
 
     with open(filename, "wt") as fp:
-        data = template.format(
-            version=version, full_version=fullversion, git_revision=git_rev,
-            is_released=is_released, version_info=version_info,
-            package_name=package_name.upper(),
+        data = _TEMPLATE.format(
+            final_version=final_version, full_version=full_version,
+            git_revision=git_rev, is_released=is_released,
+            version_info=version_info, package_name=package_name.upper(),
         )
         fp.write(data)
 
-    return fullversion
+    return full_version
