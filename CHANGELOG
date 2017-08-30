@@ -1,3 +1,12 @@
+2017-08-30 0.3.0
+----------------
+
+Bug fix release of simple-versioner:
+
+* don't import _version.py anymore. Instead, parse it w/ ast, to avoid
+bootstrapping issues when importing the package from setup.py
+* add support for release candidates
+
 2017-08-29 0.2.0
 ----------------
 
