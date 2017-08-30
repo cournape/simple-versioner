@@ -162,3 +162,33 @@ class TestVersioner(TempdirMixin, unittest.TestCase):
 
         # Then
         self.assertEqual(full_version, "1.0.dev1")
+
+    def test_sdist_mode_rc(self):
+        # Given
+        package_name = "yolo"
+        version = "1.0rc2"
+
+        os.makedirs(os.path.join(self.prefix, package_name))
+
+        init_path = os.path.join(self.prefix, package_name, "__init__.py")
+        with open(init_path, "wt") as fp:
+            fp.write("")
+
+        _version_path = os.path.join(self.prefix, package_name, "_version.py")
+        with open(_version_path, "wt") as fp:
+            fp.write(textwrap.dedent("""\
+            # THIS FILE IS GENERATED FROM TFBOOST SETUP.PY
+            version = '1.0rc2'
+            full_version = '1.0rc2.dev1'
+            git_revision = 'fbd0fc1adb572405db7ce0da4fe56f8d7de5ed4d'
+            is_released = True
+
+            version_info = (1, 0, 'final', 2)
+            """))
+
+        # When
+        with cd(self.prefix):
+            full_version = write_version_py(package_name, version)
+
+        # Then
+        self.assertEqual(full_version, "1.0rc2")
